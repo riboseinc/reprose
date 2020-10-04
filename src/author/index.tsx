@@ -6,7 +6,7 @@ import { InputRule, inputRules, smartQuotes, emDash, ellipsis } from 'prosemirro
 import { keymap } from 'prosemirror-keymap';
 
 import { EditorProps } from './editor';
-import MenuBar, { MenuGroups } from './menu';
+import DefaultMenuBar, { MenuBarProps, MenuGroups, MenuOption } from './menu';
 import { EditorState, NodeSelection, Selection, Plugin } from 'prosemirror-state';
 
 
@@ -15,7 +15,9 @@ function isNodeSelection(selection: Selection): selection is NodeSelection {
 }
 
 
-export const blockActive = <S extends Schema>(type: NodeType, attrs: Record<string, any> = {}) => (state: EditorState<S>) => {
+export const blockActive =
+<S extends Schema>(type: NodeType<S>, attrs: Record<string, any> = {}): MenuOption<S>["active"] =>
+(state: EditorState<S>) => {
   const { $from, to } = state.selection;
 
   if (isNodeSelection(state.selection) && state.selection.node) {
@@ -43,7 +45,14 @@ const defaultTypographicInputRules = [
 ];
 
 
-export default function featuresToEditorProps<S extends Schema>(features: AuthoringFeature<S>[], schema: S):
+interface EditorCustomizationOptions {
+  MenuBar?: React.FC<MenuBarProps>
+}
+
+
+export default function featuresToEditorProps
+<S extends Schema>
+(features: AuthoringFeature<S>[], schema: S, { MenuBar }: EditorCustomizationOptions):
 Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'style' | 'className'> {
 
   const menuGroups = features.
@@ -88,12 +97,14 @@ Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'sty
     keymap(keymaps),
   ];
 
+  const MenuBarComponent = MenuBar || DefaultMenuBar
+
   return {
     plugins,
     schema,
     render: ({ editor, view }) => (
       <>
-        <MenuBar menu={menuGroups} view={view} />
+        <MenuBarComponent menu={menuGroups} view={view} />
         {editor}
       </>
     ),

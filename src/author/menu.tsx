@@ -21,11 +21,22 @@ export interface MenuOption<S extends Schema<any, any>> {
 }
 
 
-const Button = ({ state, dispatch }: EditorView<any>): React.FC<{
+export type MenuButtonFactory = ({ state, dispatch }: EditorView<any>) => React.FC<{
   item: MenuOption<any>
   key: string
-}> => ({ key, item }) => {
-  const isActive = item.active && item.active(state);
+}>;
+
+
+export interface MenuBarProps {
+  menu: MenuGroups<any>
+  view: EditorView<any>
+  className?: string
+  groupClassName?: string
+}
+
+
+const Button: MenuButtonFactory = ({ state, dispatch }) => ({ key, item }) => {
+  const isActive = item.active ? item.active(state) === true : false;
   const isDisabled = item.enable ? item.enable(state) === false : false;
 
   return (
@@ -51,7 +62,7 @@ const Button = ({ state, dispatch }: EditorView<any>): React.FC<{
           }
 
           ${isActive
-            ? 'color: #000'
+            ? 'color: #000; font-weight: bold'
             : ''}
         `}
         title={item.label}
@@ -66,12 +77,8 @@ const Button = ({ state, dispatch }: EditorView<any>): React.FC<{
 };
 
 
-const MenuBar: React.FC<{
-  menu: MenuGroups<any>
-  view: EditorView<any>
-  className?: string
-  groupClassName?: string
-}> = function ({ menu, view, className, groupClassName }) {
+const MenuBar: React.FC<MenuBarProps> =
+function ({ menu, view, className, groupClassName }) {
   return (
     <div
         className={className}
