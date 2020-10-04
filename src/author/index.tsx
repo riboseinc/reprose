@@ -50,7 +50,7 @@ interface EditorCustomizationOptions {
 
 export default function featuresToEditorProps
 <S extends Schema>
-(features: AuthoringFeature<S>[], schema: S, { MenuBar }: EditorCustomizationOptions):
+(features: AuthoringFeature<S>[], schema: S, opts?: EditorCustomizationOptions):
 Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'style' | 'className'> {
 
   const menuGroups = features.
@@ -95,14 +95,14 @@ Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'sty
     keymap(keymaps),
   ];
 
-  const MenuBarComponent = MenuBar || DefaultMenuBar
+  const MenuBar = opts?.MenuBar || DefaultMenuBar
 
   return {
     plugins,
     schema,
     render: ({ editor, view }) => (
       <>
-        <MenuBarComponent menu={menuGroups} view={view} />
+        <MenuBar menu={menuGroups} view={view} />
         {editor}
       </>
     ),
