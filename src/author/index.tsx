@@ -21,10 +21,8 @@ export const blockActive =
   const { $from, to } = state.selection;
 
   if (isNodeSelection(state.selection) && state.selection.node) {
-    console.info("Is node selection");
     return state.selection.node.hasMarkup(type, attrs);
   } else {
-    console.info("Is not a node selection");
     return to <= $from.end() && $from.parent.hasMarkup(type, attrs);
   }
 }
