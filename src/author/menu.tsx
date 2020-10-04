@@ -17,7 +17,7 @@ export interface MenuOption<S extends Schema<any, any>> {
   content?: JSX.Element
   run: (state: EditorState<S>, dispatch?: (tr: Transaction<S>) => void) => boolean
   active?: (state: EditorState<S>) => boolean
-  enable?: (state: EditorState<S>, dispatch?: (tr: Transaction<S>) => void) => boolean
+  enable?: (state: EditorState<S>) => boolean
 }
 
 
