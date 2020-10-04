@@ -1,31 +1,101 @@
 import React from 'react';
 
-import { EditorState } from 'prosemirror-state';
-import { toggleMark } from 'prosemirror-commands';
+import { NodeType, Schema } from 'prosemirror-model';
+import { Keymap, baseKeymap, chainCommands } from 'prosemirror-commands';
+import { InputRule, inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules';
+import { keymap } from 'prosemirror-keymap';
 
-//import { MenuBar } from './menu';
-//import type { EditorProps } from './editor';
+import { EditorProps } from './editor';
+import MenuBar, { MenuGroups } from './menu';
+import { EditorState, NodeSelection, Selection, Plugin } from 'prosemirror-state';
 
 
-interface Feature {
-  content?: JSX.Element
-  label: string
-  active: (state: EditorState) => boolean
-  run: ReturnType<typeof toggleMark>
+function isNodeSelection(selection: Selection): selection is NodeSelection {
+  return selection.hasOwnProperty('node');
 }
 
 
-// export default function featuresToEditorProps(features: Feature[]):
-// Omit<EditorProps, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'style' | 'className'> {
-//   return {
-//     render: ({ editor, view }) => (
-//       <>
-//         <MenuBar view={view} />
-//       </>
-//     )
-//   }
-//   // Test
-// }
+export const blockActive = <S extends Schema>(type: NodeType, attrs: Record<string, any> = {}) => (state: EditorState<S>) => {
+  const { $from, to } = state.selection;
+
+  if (isNodeSelection(state.selection) && state.selection.node) {
+    console.info("Is node selection");
+    return state.selection.node.hasMarkup(type, attrs);
+  } else {
+    console.info("Is not a node selection");
+    return to <= $from.end() && $from.parent.hasMarkup(type, attrs);
+  }
+}
 
 
-//const MenuBar: React.FC<any> = function () { return <p>hey</p> }
+export interface AuthoringFeature<S extends Schema> {
+  getMenuOptions?(schema: S): MenuGroups<S>
+  getInputRules?(schema: S): InputRule<S>[]
+  getKeymap?(schema: S): Keymap<S>
+  getPlugins?(schema: S): Plugin<any, S>[]
+}
+
+
+const defaultTypographicInputRules = [
+  ...smartQuotes,
+  ellipsis,
+  emDash,
+];
+
+
+export default function featuresToEditorProps<S extends Schema>(features: AuthoringFeature<S>[], schema: S):
+Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'style' | 'className'> {
+
+  const menuGroups = features.
+    filter(f => f.getMenuOptions !== undefined).
+    map(f => f.getMenuOptions!(schema)).
+    reduce((prev, curr) => {
+      const resultingGroups: MenuGroups<S> = prev;
+      for (const [groupID, menuItems] of Object.entries(curr)) {
+        resultingGroups[groupID] ||= {};
+        Object.assign(resultingGroups[groupID], menuItems);
+      }
+      return resultingGroups;
+    }, {});
+
+  const extraRules = features.
+    filter(f => f.getInputRules !== undefined).
+    map(f => f.getInputRules!(schema)).
+    reduce((prev, curr) => {
+      return [ ...prev, ...curr ];
+    }, []);
+  const rules: InputRule<S>[] = [
+    ...defaultTypographicInputRules,
+    ...extraRules,
+  ];
+
+  const keymaps = features.
+    filter(f => f.getKeymap !== undefined).
+    map(f => f.getKeymap!(schema)).
+    reduce((prev, curr) => {
+      Object.keys(prev).forEach(key => {
+        if (curr[key]) {
+          curr[key] = chainCommands(curr[key], prev[key]);
+        } else {
+          curr[key] = prev[key];
+        }
+      });
+      return curr;
+    }, baseKeymap);
+
+  const plugins = [
+    inputRules({ rules }),
+    keymap(keymaps),
+  ];
+
+  return {
+    plugins,
+    schema,
+    render: ({ editor, view }) => (
+      <>
+        <MenuBar menu={menuGroups} view={view} />
+        {editor}
+      </>
+    ),
+  };
+}
