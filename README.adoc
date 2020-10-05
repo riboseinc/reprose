@@ -18,3 +18,5 @@ A feature can provide schema aspects (nodes, marks),
 and authoring aspects (key bindings, menu items, ProseMirror plugins).
 
 A few features come bundled with Reprose (work in progress).
+
+image::/docs/screenshot.png?raw=true[Editor screenshot]
