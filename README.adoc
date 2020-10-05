@@ -19,4 +19,49 @@ and authoring aspects (key bindings, menu items, ProseMirror plugins).
 
 A few features come bundled with Reprose (work in progress).
 
+== Example usage
+
+NOTE: Rendering example to be added.
+
+Obtaining a schema:
+
+.schema.ts
+[source,typescript]
+----
+import paragraph from '@riboseinc/reprose/features/paragraph/schema';
+import lists from '@riboseinc/reprose/features/lists/schema';
+
+import featuresToSchema from '@riboseinc/reprose/schema';
+
+const schema = featuresToSchema([paragraph, lists]);
+
+export default schema;
+----
+
+Obtaining an editor:
+
+.editor.ts
+[source,typescript]
+----
+import blocky from '@riboseinc/reprose/features/blocky/author';
+import paragraph from '@riboseinc/reprose/features/paragraph/author';
+import lists from '@riboseinc/reprose/features/lists/author';
+
+import featuresToEditorProps from '@riboseinc/reprose/author';
+import Editor from '@riboseinc/reprose/author/editor';
+
+import schema from './schema';
+
+const editorProps = featuresToEditorProps([blocky, paragraph, lists], schema);
+
+export default editor = (
+  <Editor
+    onChange={...}
+    initialDoc={...}
+    logger={log}
+    {...editorProps}
+  />
+)
+----
+
 image::/docs/screenshot.png?raw=true[Editor screenshot]
