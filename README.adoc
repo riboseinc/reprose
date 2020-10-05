@@ -40,7 +40,7 @@ export default schema;
 
 Obtaining an editor:
 
-.editor.ts
+.editor.tsx
 [source,typescript]
 ----
 import blocky from '@riboseinc/reprose/features/blocky/author';
