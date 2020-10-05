@@ -1,0 +1,20 @@
+= Reprose
+
+A configurable editor for React, based on ProseMirror
+and written in TypeScript.
+
+Provides tools and patterns that simplify rendering a document to HTML
+in headless environments (e.g., Node or Electron main process)
+where global window object is unavailable,
+and for creating a rich editor React component.
+
+The editor component provides an `onChange()` handler,
+outputting data serialized as ProseMirror document structure.
+
+== Features
+
+Reprose’s functionality is contained in _features_.
+A feature can provide schema aspects (nodes, marks),
+and authoring aspects (key bindings, menu items, ProseMirror plugins).
+
+A few features come bundled with Reprose (work in progress).
