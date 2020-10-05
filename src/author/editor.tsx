@@ -55,7 +55,10 @@ class Editor extends React.Component<EditorProps<any>> {
   componentDidMount() {
     if (this.props.proseMirrorClassName) {
       for (const token of this.props.proseMirrorClassName.split(' ')) {
-        this.view.dom.classList.add(token.trim());
+        const cls = token.trim();
+        if (cls !== '') {
+          this.view.dom.classList.add(cls);
+        }
       }
     }
 
