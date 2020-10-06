@@ -1,4 +1,5 @@
 import { MarkSpec, NodeSpec, Schema } from 'prosemirror-model';
+import { nodes as basicNodes } from 'prosemirror-schema-basic';
 
 
 export interface SchemaFeature<N extends string = any, M extends string = any> {
@@ -19,17 +20,25 @@ Schema<any, any> {
     map(f => f.marks || {}).
     reduce((p, c) => ({ ...p, ...c }), {});
 
-  if (Object.keys(nodes).length < 1) {
-    throw new Error("Reprose: No node definitions found across given features");
+  if (Object.keys(nodes).length > 0) {
+    return new Schema({
+      nodes: {
+        doc: { content: "block+" },
+        text: { group: "inline" },
+        ...nodes,
+      },
+      marks,
+    });
+
+  } else {
+    return new Schema({
+      nodes: {
+        doc: { content: "block" },
+        text: { group: "inline" },
+        paragraph: basicNodes.paragraph,
+      },
+      marks,
+    });
+
   }
-
-  return new Schema({
-    nodes: {
-      doc: { content: "block+" },
-      text: { group: "inline" },
-      ...nodes,
-    },
-    marks,
-  });
-
 }
