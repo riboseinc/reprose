@@ -8,6 +8,11 @@ export interface SchemaFeature<N extends string = any, M extends string = any> {
 }
 
 
+export interface FeatureOptions {
+  allowBlocks?: boolean
+}
+
+
 export default function featuresToSchema<K extends SchemaFeature[]>
 (features: K):
 Schema<any, any> {

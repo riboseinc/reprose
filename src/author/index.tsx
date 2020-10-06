@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NodeType, Schema } from 'prosemirror-model';
+import { MarkType, NodeType, Schema } from 'prosemirror-model';
 import { Keymap, baseKeymap, chainCommands } from 'prosemirror-commands';
 import { InputRule, inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules';
 import { keymap } from 'prosemirror-keymap';
@@ -25,6 +25,19 @@ export const blockActive =
   } else {
     return to <= $from.end() && $from.parent.hasMarkup(type, attrs);
   }
+}
+
+
+export const markActive =
+<S extends Schema>(type: MarkType<S>): MenuOption<S>["active"] =>
+(state: EditorState<S>) => {
+  const { from, $from, to, empty } = state.selection;
+
+  const result = empty
+    ? type.isInSet(state.storedMarks || $from.marks())
+    : state.doc.rangeHasMark(from, to, type);
+
+  return result !== null && result !== undefined && result !== false;
 }
 
 
