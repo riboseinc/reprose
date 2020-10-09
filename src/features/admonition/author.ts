@@ -4,6 +4,7 @@ import type { EditorView } from 'prosemirror-view';
 import { AuthoringFeature, blockActive, canInsert } from '../../author';
 import { NODE_TYPES as PARAGRAPH_NODES } from '../paragraph/schema';
 import { NODE_TYPES, ADMONITION_TYPES, ADMONITION_TYPE_LABELS } from './schema';
+import { setBlockType } from 'prosemirror-commands';
 
 
 class AdmonitionView<S extends Schema<any, any>> {
@@ -62,7 +63,7 @@ const feature: AuthoringFeature<Schema<typeof NODE_TYPES[number] | typeof PARAGR
     ];
   },
 
-  getMenuOptions(schema: Schema<typeof NODE_TYPES[number]>) {
+  getMenuOptions(schema) {
     return {
       admonitions: {
         admonition: {
@@ -73,11 +74,10 @@ const feature: AuthoringFeature<Schema<typeof NODE_TYPES[number] | typeof PARAGR
             dispatch!(state.tr.replaceSelectionWith(schema.nodes.admonition.create(undefined, schema.nodes.paragraph.create()))),
         },
         admonition_caption: {
-          label: 'Insert admonition caption',
+          label: 'Change to admonition caption',
           active: blockActive(schema.nodes.admonition_caption),
-          enable: canInsert(schema.nodes.admonition_caption),
-          run: (state, dispatch) =>
-            dispatch!(state.tr.replaceSelectionWith(schema.nodes.admonition_caption.create())),
+          enable: setBlockType(schema.nodes.admonition_caption),
+          run: setBlockType(schema.nodes.admonition_caption),
         },
       },
     };
