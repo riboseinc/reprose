@@ -15,7 +15,7 @@ export type MenuGroups<S extends Schema<any, any>> =
 export interface MenuOption<S extends Schema<any, any>> {
   label: string
   content?: JSX.Element
-  run: (state: EditorState<S>, dispatch?: (tr: Transaction<S>) => void) => boolean
+  run: (state: EditorState<S>, dispatch?: (tr: Transaction<S>) => void) => void
   active?: (state: EditorState<S>) => boolean
   enable?: (state: EditorState<S>) => boolean
 }
