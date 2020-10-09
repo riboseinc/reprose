@@ -41,6 +41,23 @@ export const markActive =
 }
 
 
+export const canInsert =
+<S extends Schema>(type: NodeType<S>): MenuOption<S>["active"] =>
+(state: EditorState<S>) => {
+  const { $from } = state.selection;
+
+  for (let d = $from.depth; d >= 0; d--) {
+    const index = $from.index(d);
+
+    if ($from.node(d).canReplaceWith(index, index, type)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 export interface AuthoringFeature<S extends Schema> {
   getMenuOptions?(schema: S): MenuGroups<S>
   getInputRules?(schema: S): InputRule<S>[]
@@ -103,9 +120,17 @@ Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'sty
       return curr;
     }, baseKeymap);
 
+  const extraPlugins = features.
+    filter(f => f.getPlugins !== undefined).
+    map(f => f.getPlugins!(schema)).
+    reduce((prev, curr) => {
+      return [ ...prev, ...curr ];
+    }, []);
+
   const plugins = [
     inputRules({ rules }),
     keymap(keymaps),
+    ...extraPlugins,
   ];
 
   const MenuBar = opts?.MenuBar || DefaultMenuBar
