@@ -1,4 +1,6 @@
 import '@babel/polyfill';
+// Complains about regeneratorRuntime without ^^
+
 import { Step, StepMap } from 'prosemirror-transform';
 import { insertPoint } from 'prosemirror-transform';
 import { EditorState, Plugin, Transaction } from 'prosemirror-state';
@@ -46,8 +48,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
   type LinkInnerSchema = Schema<'text'>;
 
   class LinkView<S extends Schema<any, any>> implements NodeView<S> {
-    // The implementation follows a lot the canonical ProseMirror’s footnote example
-
+    // The implementation is based on the canonical ProseMirror’s footnote example
 
     node: Node<S>
     dom: HTMLSpanElement
@@ -228,7 +229,6 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
             enable: (state) => {
               return insertPoint(state.doc, state.selection.from, schema.nodes.link) != null;
             },
-
             run: (state, dispatch) => {
               const { empty, $from, $to } = state.selection;
               let content = Fragment.empty;
@@ -242,9 +242,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
                   schema.nodes.link.create(
                     { schemaID: 'web', reference: 'https://example.com/' },
                     content)));
-
-              //dispatch!(state.tr.replaceSelectionWith(schema.nodes.link.create({ schemaID: 'web', reference: 'https://example.com/' }))),
-            }
+            },
           },
         },
       };
