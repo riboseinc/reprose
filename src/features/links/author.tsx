@@ -1,3 +1,6 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import '@babel/polyfill';
 // Complains about regeneratorRuntime without ^^
 
@@ -7,43 +10,106 @@ import { EditorState, Plugin, Transaction } from 'prosemirror-state';
 import { Fragment, Node, Schema } from 'prosemirror-model';
 import { NodeView, EditorView } from 'prosemirror-view';
 import { AuthoringFeature, blockActive } from '../../author';
-import { NODE_TYPES } from './schema';
+import { LinkNodeAttrs, NODE_TYPES } from './schema';
 
 
-export interface LinkSchema {
-  entityTypeLabel: string
-  validateLocation: (location: string) => Promise<string[]>
-  sanitizeLocation: (location: string) => Promise<string>
-  //resolveURL
+export interface LinkAttributeEditorProps {
+  schemas: LinkSchemas
+  attrs: LinkNodeAttrs
+  onAttrsChanged: (attrs: LinkNodeAttrs) => void
 }
 
+const LinkEditor: React.FC<LinkAttributeEditorProps> = function ({ schemas, attrs, onAttrsChanged }) {
+  const [editedAttrs, updateEditedAttrs] = React.useState<LinkNodeAttrs | null>(null);
 
+  function handleConfirm() {
+    if (editedAttrs !== null) {
+      onAttrsChanged(editedAttrs);
+    }
+  }
+
+  const att = editedAttrs || attrs;
+
+  return (
+    <>
+      <select
+          value={att.schemaID}
+          onChange={evt => updateEditedAttrs({ ...att, schemaID: evt.currentTarget.value })}>
+        {Object.entries(schemas).map(([schemaID, schemaOpts]) =>
+          <option key={schemaID} value={schemaID}>{schemaOpts.entityTypeLabel}</option>
+        )}
+      </select>
+      <input
+        tabIndex={1}
+        value={att.reference}
+        onChange={evt => updateEditedAttrs({ ...att, reference: evt.currentTarget.value })}
+      />
+      <button disabled={editedAttrs === null} onClick={handleConfirm}>Update link</button>
+    </>
+  );
+};
+
+
+// NOTE: Terminology clash: The “schema” in “link schema” here does not mean “schema” in ProseMirror sense.
+// It merely stands for a type of links that the user can enter.
 export type LinkSchemas = { [schemaID: string]: LinkSchema }
+export interface LinkSchema {
+  entityTypeLabel: string
+  resolveReference: (ref: string) => Promise<Partial<Pick<LinkNodeAttrs, 'hRef' | 'title'>>>
+  validateReference: (ref: string) => Promise<string[]>
+  sanitizeReference: (ref: string) => Promise<string>
+}
 
 
 export const DEFAULT_SCHEMAS: LinkSchemas = {
   web: {
-    entityTypeLabel: 'Web page',
-    validateLocation: async (loc) => {
-      if (!loc.toLowerCase().startsWith('https')) {
-        return ["Link is not using secure protocol"];
+    entityTypeLabel: "URL",
+    resolveReference: async (ref) => {
+      return { hRef: ref };
+    },
+    validateReference: async (loc) => {
+      try {
+        const url = new URL(loc);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          return ["URL is using unknown protocol"]
+        }
+        if (url.protocol !== 'https:') {
+          return ["URL is not using secure protocol"];
+        }
+      } catch (e) {
+        return ["URL does not seem to be correctly formatted"];
       }
       return [];
     },
-    sanitizeLocation: async (loc) => {
-      if (loc.startsWith('http')) {
-        return loc.toLowerCase().trim();
-      } else {
-        throw new Error("Invalid page URL");
+    sanitizeReference: async (ref) => {
+      // TODO: Can check whether HTTPS works and fall back to HTTP if not
+      try {
+        const url = ref.startsWith('http') ? ref : `https://${ref}`;
+        const actualURL = new URL(url);
+        if (actualURL.protocol !== 'http' && actualURL.protocol !== 'https') {
+          return ref;
+        }
+        return actualURL.toString().toLowerCase().trim();
+      } catch (e) {
+        return ref;
       }
     },
   },
 };
 
 
-export default function getFeature(opts?: { schemas?: LinkSchemas }) {
+interface FeatureOptions {
+  floatingLinkEditorClassName?: string
+  schemas?: LinkSchemas
+  LinkEditor?: React.FC<LinkAttributeEditorProps>
+}
 
-  //TODO: const schemas = opts?.schemas || DEFAULT_SCHEMAS;
+
+export default function getFeature(opts?: FeatureOptions) {
+
+  const schemas = opts?.schemas || DEFAULT_SCHEMAS;
+
+  const LinkAttributeEditor = opts?.LinkEditor || LinkEditor;
 
   type LinkInnerSchema = Schema<'text'>;
 
@@ -54,6 +120,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
     dom: HTMLSpanElement
     outerView: EditorView<S>
     innerView: EditorView<Schema<'text'>> | null
+    linkEditor: HTMLDivElement | null
 
     constructor(node: Node<S>, view: EditorView<S>, private getPos: boolean | (() => number)) {
       this.node = node;
@@ -62,6 +129,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
       this.dom = document.createElement('a');
       this.dom.textContent = node.textContent;
       this.innerView = null;
+      this.linkEditor = null;
     }
 
     selectNode() {
@@ -76,27 +144,44 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
       this.close();
     }
 
+    renderAttributeEditor(container: HTMLSpanElement) {
+      ReactDOM.render(<LinkAttributeEditor
+        schemas={schemas}
+        attrs={this.node.attrs as LinkNodeAttrs}
+        onAttrsChanged={attrs => {
+          if (typeof this.getPos === "function") {
+            this.outerView.dispatch(
+              this.outerView.state.tr.setNodeMarkup(this.getPos(), undefined, attrs));
+            setTimeout((() => this.open()), 200);
+          } else {
+            console.error("getPos is not a function");
+          }
+        }}
+      />, container, () => {
+        this.linkEditor?.querySelector('input')?.focus();
+      });
+    }
+
     open() {
       // Append a floater to the outer node
-      const tooltip = this.dom.appendChild(document.createElement('div'));
-      tooltip.className = 'link-editor';
-
+      this.linkEditor = this.dom.appendChild(document.createElement('div'));
+      this.linkEditor.className = opts?.floatingLinkEditorClassName || 'link-editor';
       if (typeof this.getPos === "function") {
         // Position link editor right on top of link.
         const { left, top } = this.outerView.coordsAtPos(this.getPos());
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
+        this.linkEditor.style.left = `${left}px`;
+        this.linkEditor.style.top = `${top}px`;
       }
 
+      const linkAttributeEditor = this.linkEditor.appendChild(document.createElement('div'));
+      linkAttributeEditor.classList.add('attribute-editor');
+      this.renderAttributeEditor(linkAttributeEditor);
+      const linkTextEditor = this.linkEditor.appendChild(document.createElement('div'));
+
       // And put a sub-ProseMirror into that
-      this.innerView = new EditorView<LinkInnerSchema>(tooltip, {
+      this.innerView = new EditorView<LinkInnerSchema>(linkTextEditor, {
         // You can use any node as an editor document
         state: EditorState.create({
-          //schema: new Schema({
-          //  nodes: {
-          //    text: { group: 'inline*' },
-          //  },
-          //}),
           doc: this.node,
           //plugins: [keymap({
           //  "Mod-z": () => undo(this.outerView.state, this.outerView.dispatch),
@@ -123,6 +208,13 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
         this.innerView.destroy();
         this.innerView = null;
       }
+
+      const attributeEditorContainer = this.linkEditor?.querySelector('attribute-editor');
+      if (attributeEditorContainer) {
+        ReactDOM.unmountComponentAtNode(attributeEditorContainer);
+      }
+
+      this.linkEditor?.remove();
       this.dom.textContent = this.node.textContent;
     }
 
@@ -192,7 +284,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
     }
 
     stopEvent(event: any) {
-      if (this.innerView !== null && this.innerView.dom.contains(event.target)) {
+      if (this.innerView !== null && this.linkEditor?.contains(event.target)) {
         return true;
       }
       return false;
