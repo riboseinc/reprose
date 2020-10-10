@@ -1,13 +1,13 @@
 import { Plugin } from 'prosemirror-state';
 import type { Node, Schema } from 'prosemirror-model';
-import type { EditorView } from 'prosemirror-view';
+import type { NodeView, EditorView } from 'prosemirror-view';
 import { AuthoringFeature, blockActive, canInsert } from '../../author';
 import { NODE_TYPES as PARAGRAPH_NODES } from '../paragraph/schema';
 import { NODE_TYPES, ADMONITION_TYPES, ADMONITION_TYPE_LABELS } from './schema';
 import { setBlockType } from 'prosemirror-commands';
 
 
-class AdmonitionView<S extends Schema<any, any>> {
+class AdmonitionView<S extends Schema<any, any>> implements NodeView<S> {
   node: Node<S>
   dom: HTMLDivElement
   contentDOM: HTMLDivElement
