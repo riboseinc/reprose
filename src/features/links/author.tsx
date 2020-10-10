@@ -105,6 +105,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
       tooltip.className = 'link-editor';
 
       if (typeof this.getPos === "function") {
+        // Position link editor right on top of link.
         const { left, top } = this.outerView.coordsAtPos(this.getPos());
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
