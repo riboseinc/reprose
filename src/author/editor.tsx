@@ -1,23 +1,27 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
 import { css, jsx } from '@emotion/core';
 import React, { RefObject } from 'react';
-import { Schema } from 'prosemirror-model';
-import { EditorState, Plugin } from 'prosemirror-state';
+import type { Schema } from 'prosemirror-model';
+import { EditorState } from 'prosemirror-state';
 import { EditorView, EditorProps as ProseMirrorEditorProps } from 'prosemirror-view';
+import { AuthoringFeature } from './feature';
+import DefaultMenuBar, { MenuOption, MenuBarProps } from './menu';
+import { featuresToMenuGroups, featuresToPlugins } from '.';
 
 
 export interface EditorProps<S extends Schema> {
   initialDoc: Record<string, any>
+  features: AuthoringFeature<S>[]
   schema: S
-
-  plugins?: Array<Plugin<any, S>>
-  prosemirrorEditorProps?: ProseMirrorEditorProps
-
   onChange?: (doc: Record<string, any>) => void
-  autoFocus?: boolean
 
-  render?: (props: { editor: JSX.Element, view: EditorView<S> }) => JSX.Element
+  MenuBar?: React.FC<MenuBarProps>
+  //render?: (props: { editor: JSX.Element, view: EditorView<S> }) => JSX.Element
+
+  prosemirrorEditorProps?: ProseMirrorEditorProps
+  autoFocus?: boolean
   className?: string
   proseMirrorClassName?: string
   style?: React.CSSProperties
@@ -28,15 +32,19 @@ export interface EditorProps<S extends Schema> {
 class Editor extends React.Component<EditorProps<any>> {
   view: EditorView;
   editorRef: RefObject<HTMLDivElement>;
+  menuGroups: Record<string, Record<string, MenuOption<any>>>;
 
   constructor(props: EditorProps<any>) {
     super(props);
+
+    const plugins = featuresToPlugins(props.features, props.schema);
+
     this.editorRef = React.createRef<HTMLDivElement>();
     this.view = new EditorView(undefined, {
       state: EditorState.create({
         doc: props.schema.nodeFromJSON(this.props.initialDoc),
         schema: props.schema,
-        plugins: props.plugins,
+        plugins,
       }),
       dispatchTransaction: transaction => {
         const { state, transactions } = this.view.state.applyTransaction(transaction);
@@ -50,6 +58,7 @@ class Editor extends React.Component<EditorProps<any>> {
       },
       ...(props.prosemirrorEditorProps || {}),
     });
+    this.menuGroups = featuresToMenuGroups(props.features, props.schema);
   }
 
   componentDidMount() {
@@ -70,22 +79,22 @@ class Editor extends React.Component<EditorProps<any>> {
   }
 
   render() {
-    const editor = <div
-      ref={this.editorRef}
-      className={this.props.className}
-      css={css`
-        ${PROSEMIRROR_CSS}
-        ${REACT_PROSEMIRROR_CSS}
-      `}
-      style={this.props.style}
-    />;
+    const Menu = this.props.MenuBar || DefaultMenuBar;
 
-    return this.props.render
-      ? this.props.render({
-          editor,
-          view: this.view,
-        })
-      : editor;
+    return (
+      <>
+        <Menu menu={this.menuGroups} view={this.view} />
+        <div
+          ref={this.editorRef}
+          className={this.props.className}
+          css={css`
+            ${PROSEMIRROR_CSS}
+            ${REACT_PROSEMIRROR_CSS}
+          `}
+          style={this.props.style}
+        />
+      </>
+    );
   }
 }
 

@@ -1,69 +1,14 @@
-import React from 'react';
-
-import { MarkType, NodeType, Schema } from 'prosemirror-model';
-import { Keymap, baseKeymap, chainCommands } from 'prosemirror-commands';
+import type { Plugin } from 'prosemirror-state';
+import type { Schema } from 'prosemirror-model';
+import { baseKeymap, chainCommands } from 'prosemirror-commands';
 import { InputRule, inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules';
 import { keymap } from 'prosemirror-keymap';
 
-import { EditorProps } from './editor';
-import DefaultMenuBar, { MenuBarProps, MenuGroups, MenuOption } from './menu';
-import { EditorState, NodeSelection, Selection, Plugin } from 'prosemirror-state';
+import type { MenuGroups, MenuOption } from './menu';
+import type { AuthoringFeature } from './feature';
 
-
-function isNodeSelection(selection: Selection): selection is NodeSelection {
-  return selection.hasOwnProperty('node');
-}
-
-
-export const blockActive =
-<S extends Schema>(type: NodeType<S>, attrs: Record<string, any> = {}): MenuOption<S>["active"] =>
-(state: EditorState<S>) => {
-  const { $from, to } = state.selection;
-
-  if (isNodeSelection(state.selection) && state.selection.node) {
-    return state.selection.node.hasMarkup(type, attrs);
-  } else {
-    return to <= $from.end() && $from.parent.hasMarkup(type, attrs);
-  }
-}
-
-
-export const markActive =
-<S extends Schema>(type: MarkType<S>): MenuOption<S>["active"] =>
-(state: EditorState<S>) => {
-  const { from, $from, to, empty } = state.selection;
-
-  const result = empty
-    ? type.isInSet(state.storedMarks || $from.marks())
-    : state.doc.rangeHasMark(from, to, type);
-
-  return result !== null && result !== undefined && result !== false;
-}
-
-
-export const canInsert =
-<S extends Schema>(type: NodeType<S>): MenuOption<S>["active"] =>
-(state: EditorState<S>) => {
-  const { $from } = state.selection;
-
-  for (let d = $from.depth; d >= 0; d--) {
-    const index = $from.index(d);
-
-    if ($from.node(d).canReplaceWith(index, index, type)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-export interface AuthoringFeature<S extends Schema> {
-  getMenuOptions?(schema: S): MenuGroups<S>
-  getInputRules?(schema: S): InputRule<S>[]
-  getKeymap?(schema: S): Keymap<S>
-  getPlugins?(schema: S): Plugin<any, S>[]
-}
+export { AuthoringFeature } from './feature';
+export * from './util';
 
 
 const defaultTypographicInputRules = [
@@ -73,15 +18,10 @@ const defaultTypographicInputRules = [
 ];
 
 
-interface EditorCustomizationOptions {
-  MenuBar?: React.FC<MenuBarProps>
-}
-
-
-export default function featuresToEditorProps
+export function featuresToMenuGroups
 <S extends Schema>
-(features: AuthoringFeature<S>[], schema: S, opts?: EditorCustomizationOptions):
-Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'style' | 'className'> {
+(features: AuthoringFeature<S>[], schema: S):
+Record<string, Record<string, MenuOption<S>>> {
 
   const menuGroups = features.
     filter(f => f.getMenuOptions !== undefined).
@@ -94,6 +34,16 @@ Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'sty
       }
       return resultingGroups;
     }, {});
+
+  return menuGroups;
+
+}
+
+
+export function featuresToPlugins
+<S extends Schema>
+(features: AuthoringFeature<S>[], schema: S):
+Array<Plugin<any, S>> {
 
   const extraRules = features.
     filter(f => f.getInputRules !== undefined).
@@ -133,16 +83,5 @@ Omit<EditorProps<S>, 'onChange' | 'logger' | 'initialDoc' | 'key' | 'css' | 'sty
     ...extraPlugins,
   ];
 
-  const MenuBar = opts?.MenuBar || DefaultMenuBar
-
-  return {
-    plugins,
-    schema,
-    render: ({ editor, view }) => (
-      <>
-        <MenuBar menu={menuGroups} view={view} />
-        {editor}
-      </>
-    ),
-  };
+  return plugins;
 }
