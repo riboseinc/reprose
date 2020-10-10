@@ -51,8 +51,8 @@ const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
         return [
           'div',
           { 'data-admonition-type': node.attrs.type },
-          ADMONITION_TYPE_LABELS[node.attrs.type as typeof ADMONITION_TYPES[number]],
-          0,
+          ['p', { 'data-admonition-type-label': '' }, ADMONITION_TYPE_LABELS[node.attrs.type as typeof ADMONITION_TYPES[number]]],
+          ['div', { 'data-admonition-contents': '' }, 0],
         ];
       },
       parseDOM: [{
