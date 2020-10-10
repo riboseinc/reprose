@@ -1,6 +1,4 @@
-//import React from 'react';
 import '@babel/polyfill';
-//import ReactDOM from 'react-dom';
 import { Step, StepMap } from 'prosemirror-transform';
 import { insertPoint } from 'prosemirror-transform';
 import { EditorState, Plugin, Transaction } from 'prosemirror-state';
@@ -44,28 +42,6 @@ export const DEFAULT_SCHEMAS: LinkSchemas = {
 export default function getFeature(opts?: { schemas?: LinkSchemas }) {
 
   //TODO: const schemas = opts?.schemas || DEFAULT_SCHEMAS;
-
-  //const NodeEditor: React.FC<{
-  //  attrs: Record<string, any>
-  //  onUpdateAttrs: (attrs: Record<string, any>) => void
-  //  style?: React.CSSProperties
-  //}> = function ({ attrs, onUpdateAttrs, style }) {
-  //  return (
-  //    <div style={style}>
-  //      <select
-  //          value={attrs.schemaID}
-  //          onChange={evt => onUpdateAttrs({ ...attrs, schemaID: evt.currentTarget.value })}>
-  //        {Object.entries(schemas).map(([schemaID, schemaOpts]) => {
-  //          <option key={schemaID} value={schemaID}>{schemaOpts.entityTypeLabel}</option>
-  //        })}
-  //      </select>
-  //      <input
-  //        value={attrs.reference}
-  //        onChange={evt => onUpdateAttrs({ ...attrs, reference: evt.currentTarget.value })}
-  //      />
-  //    </div>
-  //  );
-  //};
 
   type LinkInnerSchema = Schema<'text'>;
 
