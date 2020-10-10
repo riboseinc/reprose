@@ -101,7 +101,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
           //plugins: [keymap({
           //  "Mod-z": () => undo(this.outerView.state, this.outerView.dispatch),
           //  "Mod-y": () => redo(this.outerView.state, this.outerView.dispatch)
-          //})]
+          //})],
         }),
         dispatchTransaction: this.dispatchInner.bind(this),
         handleDOMEvents: {
@@ -163,6 +163,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
       if (this.innerView !== null) {
         const state = this.innerView.state;
         const start = node.content.findDiffStart(state.doc.content as Fragment<S>);
+
         if (start != null) {
           const diffEnd = node.content.findDiffEnd(
             // Possibly wrong typing?
@@ -184,7 +185,7 @@ export default function getFeature(opts?: { schemas?: LinkSchemas }) {
           }
         }
       }
-      return true
+      return true;
     }
     destroy() {
       this.close();

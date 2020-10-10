@@ -36,7 +36,6 @@ Record<string, Record<string, MenuOption<S>>> {
     }, {});
 
   return menuGroups;
-
 }
 
 
