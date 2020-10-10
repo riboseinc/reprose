@@ -29,8 +29,18 @@ const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
 
     admonition_caption: {
       content: 'inline*',
-      toDOM() { return ['admonition-caption', { 'style': 'font-weight: bold;' }, 0] },
-      parseDOM: [{ tag: 'admonition-caption' }],
+      toDOM() {
+        return [
+          'div',
+          { 'data-admonition-caption': '1', 'style': 'font-weight: bold;' },
+          0,
+        ];
+      },
+      parseDOM: [{
+        tag: 'div[data-admonition-caption]',
+      }, {
+        tag: 'admonition-caption',
+      }],
     },
 
     admonition: {
@@ -39,19 +49,23 @@ const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
       group: 'admonition block',
       toDOM(node) {
         return [
-          'admonition',
-          { 'admonition-type': node.attrs.type },
+          'div',
+          { 'data-admonition-type': node.attrs.type },
           ADMONITION_TYPE_LABELS[node.attrs.type as typeof ADMONITION_TYPES[number]],
           0,
         ];
       },
       parseDOM: [{
-        tag: 'admonition',
-        getAttrs (dom) {
+        tag: 'div[data-admonition-type]',
+        getAttrs (domEl) {
+          const el = domEl as HTMLElement;
           return {
-            type: (<HTMLElement>dom).getAttribute('admonition-type') || ADMONITION_TYPES[0],
+            type:
+              el.getAttribute('data-admonition-type') ||
+              el.getAttribute('admonition-type') ||
+              ADMONITION_TYPES[0],
           };
-        }
+        },
       }],
     },
 
