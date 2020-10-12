@@ -76,7 +76,7 @@ const feature: AuthoringFeature<Schema<typeof NODE_TYPES[number] | typeof PARAGR
             dispatch!(state.tr.replaceSelectionWith(schema.nodes.admonition.create(undefined, schema.nodes.paragraph.create()))),
         },
         admonition_caption: {
-          label: 'Change to admonition caption',
+          label: 'Make admonition caption',
           active: blockActive(schema.nodes.admonition_caption),
           enable: setBlockType(schema.nodes.admonition_caption),
           run: setBlockType(schema.nodes.admonition_caption),
