@@ -17,7 +17,7 @@ export interface EditorProps<S extends Schema> {
   schema: S
   onChange?: (doc: Record<string, any>) => void
 
-  MenuBar?: React.FC<MenuBarProps>
+  MenuBar?: React.FC<MenuBarProps> | null
   //render?: (props: { editor: JSX.Element, view: EditorView<S> }) => JSX.Element
 
   prosemirrorEditorProps?: ProseMirrorEditorProps
@@ -79,11 +79,13 @@ class Editor extends React.Component<EditorProps<any>> {
   }
 
   render() {
-    const Menu = this.props.MenuBar || DefaultMenuBar;
+    const Menu = this.props.MenuBar !== undefined ? this.props.MenuBar : DefaultMenuBar;
 
     return (
       <>
-        <Menu menu={this.menuGroups} view={this.view} />
+        {Menu
+          ? <Menu menu={this.menuGroups} view={this.view} />
+          : null}
         <div
           ref={this.editorRef}
           className={this.props.className}
