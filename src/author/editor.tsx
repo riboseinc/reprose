@@ -61,6 +61,13 @@ class Editor extends React.Component<EditorProps<any>> {
     this.menuGroups = featuresToMenuGroups(props.features, props.schema);
   }
 
+  componentDidUpdate(newProps: EditorProps<any>) {
+    const editable = newProps.onChange !== undefined ? (() => true) : (() => false);
+    this.view.setProps({
+      editable,
+    });
+  }
+
   componentDidMount() {
     if (this.props.proseMirrorClassName) {
       for (const token of this.props.proseMirrorClassName.split(' ')) {
