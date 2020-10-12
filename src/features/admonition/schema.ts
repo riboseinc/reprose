@@ -57,6 +57,7 @@ const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
       },
       parseDOM: [{
         tag: 'div[data-admonition-type]',
+        contentElement: 'div[data-admonition-contents]',
         getAttrs (domEl) {
           const el = domEl as HTMLElement;
           return {
@@ -66,6 +67,9 @@ const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
               ADMONITION_TYPES[0],
           };
         },
+      }, {
+        tag: 'div[data-admonition-type-label]',
+        ignore: true,
       }],
     },
 
