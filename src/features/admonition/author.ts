@@ -15,14 +15,15 @@ class AdmonitionView<S extends Schema<any, any>> implements NodeView<S> {
 
   constructor(node: Node<S>, view: EditorView<S>, getPos: boolean | (() => number)) {
     this.node = node;
-    this.contentDOM = document.createElement('div');
-    this.dom = document.createElement('div');
 
+    this.dom = document.createElement('div');
     this.dom.setAttribute('data-admonition-type', this.node.attrs.type);
 
+    this.contentDOM = document.createElement('div');
     this.contentDOM.setAttribute('data-admonition-contents', '');
 
     this.selector = document.createElement('select');
+    this.selector.setAttribute('value', node.attrs.type);
     for (const type of ADMONITION_TYPES) {
       const opt = document.createElement('option');
       opt.setAttribute('value', type);
@@ -32,9 +33,6 @@ class AdmonitionView<S extends Schema<any, any>> implements NodeView<S> {
       opt.innerText = ADMONITION_TYPE_LABELS[type];
       this.selector.appendChild(opt);
     }
-
-    this.selector.setAttribute('value', node.attrs.type);
-
     this.selector.addEventListener('change', (evt) => {
       const newType = (<HTMLSelectElement>evt.currentTarget).value;
       if (typeof getPos === "function") {
