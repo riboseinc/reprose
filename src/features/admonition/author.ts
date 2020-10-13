@@ -20,6 +20,8 @@ class AdmonitionView<S extends Schema<any, any>> implements NodeView<S> {
 
     this.dom.setAttribute('data-admonition-type', this.node.attrs.type);
 
+    this.contentDOM.setAttribute('data-admonition-contents', '');
+
     this.selector = document.createElement('select');
     for (const type of ADMONITION_TYPES) {
       const opt = document.createElement('option');
