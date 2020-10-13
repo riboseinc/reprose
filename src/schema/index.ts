@@ -28,7 +28,7 @@ Schema<any, any> {
   if (Object.keys(nodes).length > 0) {
     return new Schema({
       nodes: {
-        doc: { content: "block+ section*" },
+        doc: { content: "(block | sectioning)+" },
         text: { group: "inline" },
         ...nodes,
       },
