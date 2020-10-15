@@ -8,13 +8,22 @@ import { DEFAULT_SECTION_ID, makeSectionID, NODE_TYPES } from './schema';
 import { setBlockType } from 'prosemirror-commands';
 
 
+function guessID(suggestedID: string, sectionNode: Node<any>) {
+  const sectionHeader = sectionNode.firstChild;
+  const id = suggestedID.trim() !== DEFAULT_SECTION_ID
+    ? suggestedID
+    : sectionHeader?.textContent || DEFAULT_SECTION_ID;
+  return makeSectionID(id);
+}
+
+
 class SectionView<S extends Schema<any, any>> implements NodeView<S> {
   node: Node<S>
   dom: HTMLElement
   contentDOM: HTMLElement
   idInput: HTMLInputElement
 
-  constructor(node: Node<S>, private view: EditorView<S>, private getPos: boolean | (() => number)) {
+  constructor(node: Node<S>, view: EditorView<S>, getPos: boolean | (() => number)) {
     this.node = node;
 
     this.contentDOM = document.createElement('section');
@@ -25,15 +34,17 @@ class SectionView<S extends Schema<any, any>> implements NodeView<S> {
 
     this.idInput = document.createElement('input');
     this.idInput.setAttribute('type', 'text');
-    this.idInput.setAttribute('placeholder', 'Please provide reliable section ID for navigation');
+    this.idInput.setAttribute('placeholder', "Please enter reliable section ID for navigation here");
     this.idInput.value = node.attrs.id === DEFAULT_SECTION_ID ? '' : node.attrs.id;
     this.idInput.style.width = '100%';
     this.idInput.addEventListener('change', (evt) => {
       const newID = (<HTMLInputElement>evt.currentTarget).value;
-      const effectiveID = this.guessID(newID);
+      const effectiveID = guessID(newID, this.node);
+
       this.idInput.value = effectiveID;
-      if (typeof this.getPos === "function") {
-        this.view.dispatch(this.view.state.tr.setNodeMarkup(this.getPos(), undefined, {
+
+      if (typeof getPos === "function") {
+        view.dispatch(view.state.tr.setNodeMarkup(getPos(), undefined, {
           id: effectiveID,
         }));
       } else {
@@ -45,23 +56,8 @@ class SectionView<S extends Schema<any, any>> implements NodeView<S> {
     this.dom.appendChild(this.contentDOM);
   }
 
-  updateID(newID: string) {
-    this.contentDOM.setAttribute('id', newID);
-  }
-
-  guessID(newID: string, node?: Node<S>): string {
-    const n = node || this.node;
-    const id = newID.trim() !== DEFAULT_SECTION_ID
-      ? newID
-      : n.firstChild?.textContent || DEFAULT_SECTION_ID;
-    return makeSectionID(id);
-  }
-
   stopEvent(event: any) {
-    if (this.idInput === event.target) {
-      return true;
-    }
-    return false;
+    return (this.idInput === event.target);
   }
 
   ignoreMutation() {
