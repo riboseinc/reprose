@@ -1,6 +1,6 @@
 {
   "name": "@riboseinc/reprose",
-  "version": "1.0.0-alpha8",
+  "version": "1.0.0-alpha9",
   "description": "Configurable ProseMirror instance for React",
   "repository": "git@github.com:riboseinc/reprose.git",
   "author": "Ribose Inc. <open.source@ribose.com>",
