@@ -14,12 +14,16 @@ import { LinkNodeAttrs, NODE_TYPES } from './schema';
 
 
 export interface LinkAttributeEditorProps {
+  React: typeof React
   schemas: LinkSchemas
   attrs: LinkNodeAttrs
   onAttrsChanged: (attrs: LinkNodeAttrs) => void
 }
 
-const LinkEditor: React.FC<LinkAttributeEditorProps> = function ({ schemas, attrs, onAttrsChanged }) {
+const LinkEditor: React.FC<LinkAttributeEditorProps> = function ({
+    React,
+    schemas, attrs, onAttrsChanged,
+}) {
   const [editedAttrs, updateEditedAttrs] = React.useState<LinkNodeAttrs | null>(null);
 
   function handleConfirm() {
@@ -122,7 +126,11 @@ export default function getFeature(opts?: FeatureOptions) {
     innerView: EditorView<Schema<'text'>> | null
     linkEditor: HTMLDivElement | null
 
-    constructor(node: Node<S>, view: EditorView<S>, private getPos: boolean | (() => number)) {
+    constructor(
+        node: Node<S>,
+        view: EditorView<S>,
+        private getPos: boolean | (() => number),
+        private reactCls: typeof React) {
       this.node = node;
       this.outerView = view;
       this.getPos = getPos;
@@ -146,6 +154,7 @@ export default function getFeature(opts?: FeatureOptions) {
 
     renderAttributeEditor(container: HTMLSpanElement) {
       ReactDOM.render(<LinkAttributeEditor
+        React={this.reactCls}
         schemas={schemas}
         attrs={this.node.attrs as LinkNodeAttrs}
         onAttrsChanged={attrs => {
@@ -299,13 +308,13 @@ export default function getFeature(opts?: FeatureOptions) {
   // This feature depends on paragraphs feature being enabled too.
   const feature: AuthoringFeature<Schema<typeof NODE_TYPES[number]>> = {
 
-    getPlugins() {
+    getPlugins(schema, React) {
       return [
         new Plugin({
           props: {
             nodeViews: {
               link: (node, view, getPos) => {
-                return new LinkView(node, view, getPos);
+                return new LinkView(node, view, getPos, React);
               },
             },
           },

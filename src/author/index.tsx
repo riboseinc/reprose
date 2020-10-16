@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { Plugin } from 'prosemirror-state';
 import type { Schema } from 'prosemirror-model';
 import { baseKeymap, chainCommands } from 'prosemirror-commands';
@@ -41,7 +42,7 @@ Record<string, Record<string, MenuOption<S>>> {
 
 export function featuresToPlugins
 <S extends Schema>
-(features: AuthoringFeature<S>[], schema: S):
+(features: AuthoringFeature<S>[], schema: S, reactCls: typeof React):
 Array<Plugin<any, S>> {
 
   const extraRules = features.
@@ -71,7 +72,7 @@ Array<Plugin<any, S>> {
 
   const extraPlugins = features.
     filter(f => f.getPlugins !== undefined).
-    map(f => f.getPlugins!(schema)).
+    map(f => f.getPlugins!(schema, reactCls)).
     reduce((prev, curr) => {
       return [ ...prev, ...curr ];
     }, []);

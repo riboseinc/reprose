@@ -26,6 +26,7 @@ export interface EditorProps<S extends Schema> {
   proseMirrorClassName?: string
   style?: React.CSSProperties
   logger?: Pick<Console, 'debug' | 'warn' | 'error' | 'info'>
+  reactCls?: typeof React
 }
 
 
@@ -37,7 +38,7 @@ class Editor extends React.Component<EditorProps<any>> {
   constructor(props: EditorProps<any>) {
     super(props);
 
-    const plugins = featuresToPlugins(props.features, props.schema);
+    const plugins = featuresToPlugins(props.features, props.schema, props.reactCls || React);
 
     this.editorRef = React.createRef<HTMLDivElement>();
     this.view = new EditorView(undefined, {
