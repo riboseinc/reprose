@@ -4,38 +4,46 @@ export const NODE_TYPES = [
   'image'
 ] as const;
 
-const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
+export interface FeatureOptions {
+  getSrcToShow: (src: string) => string
+  getSrcToStore: (src: string) => string
+}
 
-  nodes: {
+export default function getFeature(opts: FeatureOptions) {
+  const feature: SchemaFeature<typeof NODE_TYPES[number]> = {
 
-    image: {
-      group: 'figure_content',
-      inline: false,
-      atom: true,
-      attrs: {
-        alt: { default: '' },
-        src: {},
-      },
-      parseDOM: [{
-        tag: 'img[src]',
-        getAttrs(domNode) {
-          const el = domNode as HTMLImageElement;
-          return {
-            alt: el.getAttribute('alt'),
-            src: el.getAttribute('src'),
-          };
+    nodes: {
+
+      image: {
+        group: 'figure_content',
+        inline: false,
+        atom: true,
+        attrs: {
+          alt: { default: '' },
+          src: { default: '' },
         },
-      }],
-      toDOM(node) {
-        const { alt, src } = node.attrs;
-        return ['img', {
-          alt,
-          src,
-        }];
+        parseDOM: [{
+          tag: 'img[src]',
+          getAttrs(domNode) {
+            const el = domNode as HTMLImageElement;
+            const src = el.getAttribute('src') || '';
+            return {
+              alt: el.getAttribute('alt'),
+              src: opts.getSrcToStore(src),
+            };
+          },
+        }],
+        toDOM(node) {
+          const { alt, src } = node.attrs;
+          return ['img', {
+            alt,
+            src: opts.getSrcToShow(src),
+          }];
+        },
       },
     },
-  },
 
-};
+  };
 
-export default feature;
+  return feature;
+}
