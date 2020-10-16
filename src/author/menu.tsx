@@ -15,7 +15,7 @@ export type MenuGroups<S extends Schema<any, any>> =
 export interface MenuOption<S extends Schema<any, any>> {
   label: string
   content?: JSX.Element
-  run: (state: EditorState<S>, dispatch?: (tr: Transaction<S>) => void) => void
+  run: (state: EditorState<S>, dispatch: (tr: Transaction<S>) => void, evt: MouseEvent) => void
   active?: (state: EditorState<S>) => boolean
   enable?: (state: EditorState<S>) => boolean
 }
@@ -69,7 +69,7 @@ const Button: MenuButtonFactory = ({ state, dispatch }) => ({ key, item }) => {
         disabled={isDisabled}
         onMouseDown={e => {
           e.preventDefault();
-          item.run(state, dispatch);
+          item.run(state, dispatch, e.nativeEvent);
         }}>
       {item.content || item.label}
     </button>
