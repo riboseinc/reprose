@@ -28,7 +28,7 @@
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
-    "@emotion/core": "^10.0.35",
+    "@emotion/react": "^11.4.0",
     "@types/node": "^14.11.8",
     "@types/prosemirror-commands": "^1.0.3",
     "@types/prosemirror-inputrules": "^1.0.3",
