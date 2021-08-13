@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { css, jsx } from '@emotion/core';
+import { css, jsx } from '@emotion/react';
 import React, { RefObject } from 'react';
 import type { Schema } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';

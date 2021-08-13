@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { css, jsx } from '@emotion/core';
+import { css, jsx } from '@emotion/react';
 import React from 'react';
 
 import { EditorView } from 'prosemirror-view';
