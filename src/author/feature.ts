@@ -22,6 +22,6 @@ export interface AuthoringFeature<S extends Schema> {
   getKeymap?(schema: S): Keymap<S>
   getPlugins?(schema: S, reactCls: typeof React): Plugin<any, S>[]
 
-  // TODO: support?
+  // TODO: provisional support for features to provide CSS styling
   getCSS?(schema: S): string
 }

@@ -268,7 +268,7 @@ export default function getFeature(opts?: FeatureOptions) {
         if (start != null) {
           const diffEnd = node.content.findDiffEnd(
             // Possibly wrong typing?
-            state.doc.content as unknown as Node<S>);
+            state.doc.content as Fragment<S>);
 
           if (diffEnd !== null && diffEnd !== undefined) {
             let { a: endA, b: endB } = diffEnd;

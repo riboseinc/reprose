@@ -1,7 +1,5 @@
-/** @jsx jsx */
-
-import { css, jsx } from '@emotion/react';
 import React from 'react';
+import styled from '@emotion/styled';
 
 import { EditorView } from 'prosemirror-view';
 import { EditorState, Transaction } from 'prosemirror-state';
@@ -36,43 +34,19 @@ export interface MenuBarProps {
 
 
 const Button: MenuButtonFactory = ({ state, dispatch }) => ({ key, item }) => {
-  const isActive = item.active ? item.active(state) === true : false;
-  const isDisabled = item.enable ? item.enable(state) === false : false;
-
   return (
-    <button
+    <StyledMenuButton
         key={key}
+        isActive={item.active ? item.active(state) === true : false}
         type="button"
-        css={css`
-          background: transparent;
-          border: none;
-          font-size: inherit;
-          color: #777;
-          border-radius: 0;
-          padding: 5px 10px;
-
-          &:hover {
-            color: #000;
-            background: #f6f6f6;
-          }
-
-          &:disabled {
-            color: #ccc;
-            cursor: not-allowed;
-          }
-
-          ${isActive
-            ? 'color: #000; font-weight: bold'
-            : ''}
-        `}
         title={item.label}
-        disabled={isDisabled}
+        disabled={item.enable ? item.enable(state) === false : false}
         onMouseDown={e => {
           e.preventDefault();
           item.run(state, dispatch, e.nativeEvent);
         }}>
       {item.content || item.label}
-    </button>
+    </StyledMenuButton>
   );
 };
 
@@ -80,30 +54,55 @@ const Button: MenuButtonFactory = ({ state, dispatch }) => ({ key, item }) => {
 const MenuBar: React.FC<MenuBarProps> =
 function ({ menu, view, className, groupClassName }) {
   return (
-    <div
-        className={className}
-        css={css`
-          display: flex;
-          flex-flow: row wrap;
-          align-items: baseline;
-          padding: .5rem;
-        `}>
+    <StyledMenuBarContainer className={className}>
       {Object.entries(menu).map(([ groupID, items ]) =>
-        <span
+        <StyledMenuGroup
             key={groupID}
-            css={css`
-              margin-right: .5rem;
-              display: flex;
-              flex-flow: row nowrap;
-            `}
             className={groupClassName}>
           {Object.entries(items).map(([ itemID, item ]) =>
             Button(view)({ key: itemID, item }))}
-        </span>
+        </StyledMenuGroup>
       )}
-    </div>
+    </StyledMenuBarContainer>
   );
 };
 
 
 export default MenuBar;
+
+
+const StyledMenuButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: inherit;
+  color: #777;
+  border-radius: 0;
+  padding: 5px 10px;
+
+  &:hover {
+    color: #000;
+    background: #f6f6f6;
+  }
+
+  &:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
+  ${(props: { isActive: boolean }) => props.isActive
+    ? 'color: #000; font-weight: bold'
+    : ''}
+`;
+
+const StyledMenuBarContainer = styled.div`
+  display: flex;
+  flex-flow: row wrap;
+  align-items: baseline;
+  padding: .5rem;
+`;
+
+const StyledMenuGroup = styled.span`
+  margin-right: .5rem;
+  display: flex;
+  flex-flow: row nowrap;
+`;
