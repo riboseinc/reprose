@@ -12,24 +12,49 @@ import { featuresToMenuGroups, featuresToPlugins } from '.';
 
 
 export interface EditorProps<S extends Schema> {
+  /**
+   * A ProseMirror structure. At its root it will have at least `{ type: 'doc' }`.
+   * If the document is invalid (including violation of the schema passed in the `schema` prop),
+   * a fallback view will be displayed.
+   */
   initialDoc: Record<string, any>
-  features: AuthoringFeature<S>[]
+
+  /** Use `featuresToSchema()` to convert schema features to ProseMirror schema. */
   schema: S
+
+  features: AuthoringFeature<S>[]
+
+  /**
+   * Called on every change within ProseMirror
+   * EditorView’s `dispatchTransaction()` handler.
+   */
   onChange?: (doc: Record<string, any>) => void
 
+  /** If undefined, `DefaultMenuBar` will be used. */
   MenuBar?: React.FC<MenuBarProps> | null
+
   //render?: (props: { editor: JSX.Element, view: EditorView<S> }) => JSX.Element
 
   prosemirrorEditorProps?: ProseMirrorEditorProps
   autoFocus?: boolean
+
   className?: string
   proseMirrorClassName?: string
   style?: React.CSSProperties
+
   logger?: Pick<Console, 'debug' | 'warn' | 'error' | 'info'>
+
+  /**
+   * Reprose user can pass in own React instance,
+   * which will be further passed to authoring features.
+   */
   reactCls?: typeof React
 }
 
 
+/**
+ * ProseMirror editor, wrapped into a React component.
+ */
 class Editor extends React.Component<EditorProps<any>> {
   view: EditorView;
   editorRef: RefObject<HTMLDivElement>;
