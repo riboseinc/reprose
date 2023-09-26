@@ -2,10 +2,10 @@ import { Plugin } from 'prosemirror-state';
 import type { Node, Schema } from 'prosemirror-model';
 import type { NodeView, EditorView } from 'prosemirror-view';
 
-import { AuthoringFeature, blockActive, canInsert } from '../../author';
+import { type AuthoringFeature, blockActive, canInsert } from '../../author';
 import { NODE_TYPES as FIGURE_NODES } from '../figure/schema';
 import {
-  FeatureOptions as SchemaFeatureOptions,
+  type FeatureOptions as SchemaFeatureOptions,
   NODE_TYPES,
 } from './schema';
 
