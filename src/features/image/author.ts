@@ -4,7 +4,10 @@ import type { NodeView, EditorView } from 'prosemirror-view';
 
 import { AuthoringFeature, blockActive, canInsert } from '../../author';
 import { NODE_TYPES as FIGURE_NODES } from '../figure/schema';
-import { FeatureOptions as SchemaFeatureOptions, NODE_TYPES } from './schema';
+import {
+  FeatureOptions as SchemaFeatureOptions,
+  NODE_TYPES,
+} from './schema';
 
 
 interface FeatureOptions extends SchemaFeatureOptions {
