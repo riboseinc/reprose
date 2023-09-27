@@ -115,15 +115,15 @@ export default function getFeature(opts?: FeatureOptions) {
 
   const LinkAttributeEditor = opts?.LinkEditor || LinkEditor;
 
-  type LinkInnerSchema = Schema<'text'>;
+  type LinkInnerSchema = Schema<'link'>;
 
-  class LinkView<S extends Schema<any, any>> implements NodeView<S> {
+  class LinkView<S extends LinkInnerSchema> implements NodeView<S> {
     // The implementation is based on the canonical ProseMirror’s footnote example
 
     node: Node<S>
     dom: HTMLSpanElement
     outerView: EditorView<S>
-    innerView: EditorView<Schema<'text'>> | null
+    innerView: EditorView<S> | null
     linkEditor: HTMLDivElement | null
 
     constructor(
@@ -188,7 +188,7 @@ export default function getFeature(opts?: FeatureOptions) {
       const linkTextEditor = this.linkEditor.appendChild(document.createElement('div'));
 
       // And put a sub-ProseMirror into that
-      this.innerView = new EditorView<LinkInnerSchema>(linkTextEditor, {
+      this.innerView = new EditorView<S>(linkTextEditor, {
         // You can use any node as an editor document
         state: EditorState.create({
           doc: this.node,
