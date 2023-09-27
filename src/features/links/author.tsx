@@ -8,9 +8,9 @@ import { Step, StepMap } from 'prosemirror-transform';
 import { insertPoint } from 'prosemirror-transform';
 import { EditorState, Plugin, Transaction } from 'prosemirror-state';
 import { Fragment, Node, Schema } from 'prosemirror-model';
-import { NodeView, EditorView } from 'prosemirror-view';
-import { AuthoringFeature, blockActive } from '../../author';
-import { LinkNodeAttrs, NODE_TYPES } from './schema';
+import { type NodeView, EditorView } from 'prosemirror-view';
+import { type AuthoringFeature, blockActive } from '../../author';
+import { type LinkNodeAttrs, NODE_TYPES } from './schema';
 
 
 export interface LinkAttributeEditorProps {

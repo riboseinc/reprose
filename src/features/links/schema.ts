@@ -1,4 +1,4 @@
-import { SchemaFeature } from '../../schema';
+import type { SchemaFeature } from '../../schema';
 
 export interface LinkNodeAttrs {
   schemaID: string
