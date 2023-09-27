@@ -161,6 +161,8 @@ export default function getFeature(opts?: FeatureOptions) {
           if (typeof this.getPos === "function") {
             this.outerView.dispatch(
               this.outerView.state.tr.setNodeMarkup(this.getPos(), undefined, attrs));
+            // TODO: This is funny, why do we need to open it on change?
+            // It will just call this method recursively wouldn’t it?
             setTimeout((() => this.open()), 200);
           } else {
             console.error("getPos is not a function");
