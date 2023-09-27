@@ -7,6 +7,7 @@ import { NODE_TYPES as FIGURE_NODES } from '../figure/schema';
 import {
   type FeatureOptions as SchemaFeatureOptions,
   NODE_TYPES,
+  LOADING_ICON_SVG_BASE64,
 } from './schema';
 
 
@@ -30,9 +31,25 @@ export default function getFeature(opts: FeatureOptions) {
 
       this.img = document.createElement('img');
       this.img.setAttribute('alt', node.attrs.alt);
+      this.img.setAttribute('src', `data:image/svg+xml;base64,${LOADING_ICON_SVG_BASE64}`);
 
-      const src = node.attrs.src.startsWith('file:') ? node.attrs.src : opts.getSrcToShow(node.attrs.src);
-      this.img.setAttribute('src', src);
+      const _src = opts.getSrcToShow(node.attrs.src);
+
+      const imgEl = this.img;
+
+      Promise.resolve(_src).then(function handleSuccess (val) {
+        if (val) {
+          imgEl.setAttribute('src', val);
+        } else {
+          // Fall back to original src
+          imgEl.setAttribute('src', node.attrs.src);
+        }
+      }, function handleReject (err) {
+        console.error("Failed to resolve image src", err);
+
+        // Fall back to original src
+        imgEl.setAttribute('src', node.attrs.src);
+      });
 
       this.altInput = document.createElement('input');
       this.altInput.setAttribute('type', 'text');
