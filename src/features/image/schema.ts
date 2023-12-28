@@ -35,7 +35,7 @@ export default function getFeature(opts: FeatureOptions) {
         }],
         toDOM(node) {
           const { alt, src } = node.attrs;
-          const parsedSrc = opts.getSrcToShow(src);
+          const parsedSrc = opts ? opts.getSrcToShow(src) : false;
           // If `getSrcToShow()` is async, we can’t show a proper image.
           // Which is OK in case of editor GUI, where it can notice the promise
           // and resolve show proper image after it resolves,
